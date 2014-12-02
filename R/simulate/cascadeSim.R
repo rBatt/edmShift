@@ -1,3 +1,4 @@
+
 # ============================
 # = Simulate Trophic Cascade =
 # ============================
@@ -18,7 +19,6 @@
 # = Load Libraries =
 # ==================
 library(zoo)
-
 
 
 # ============================
@@ -85,24 +85,6 @@ Hinit <- 5
 Pinit <- 3
 
 
-
-# # Compute rolling window autocorrelation time
-# ACtime = function(x) {
-#   zzz=acf(x,lag=1,plot=FALSE)
-#   zz=zzz$acf[2]
-#   ACt=-1/log(zz)
-#   return(ACt)
-# }
-#
-# # Compute rolling window autocorrelation
-# AClag1 = function(x) {
-#   zzz=acf(x,lag=1,plot=FALSE)
-#   zz=zzz$acf[2]
-#   #ACt=-1/log(zz)
-#   return(zz)
-# }
-
-
 # ==================
 # = Initial Values =
 # ==================
@@ -133,15 +115,6 @@ Jt[1] <- fA*Ainit
 Ht[1] <- Hinit
 Pt[1] <- Pinit
 
-# # Indicators:
-# SDt <- rep(0,nstep)
-# ARt <- SDt
-# SRt <- rep(1,nstep)
-#
-# # Alarm statistics
-# LAMvec <- rep(0,nstep)
-# Rvec <- rep(0,nstep)
-# Alarmvec <- rep(0,nstep)
 
 # ===============
 # = Run Burn-in =
@@ -156,18 +129,6 @@ for(i in 2:nburn)  {
   Pt[i] <- FWnext[[5]]
 }
 
-# Start the decision-making loop
-
-# Set alarm boundary
-# A.adj <- 1000 # A.adj = exp(logA.adj)
-# print(' ',quote=FALSE)
-# print(c('squeal boundary for SR statistic',A.adj),quote=FALSE)
-# LL.stat <- 2*log(A.adj)
-# pNLL <- 1 - pchisq(LL.stat,df=1)
-# print(c('Prob. for baseline model at squeal boundary',round(pNLL,6)),quote=FALSE)
-#
-# # Set window length for statistics
-# winlen <- 60
 
 # ========================
 # = Simulate time series =
@@ -185,28 +146,9 @@ for(i in (nburn+1):(nstep) ) {
 	Jt[i] <- FWnext[[3]]
 	Ht[i] <- FWnext[[4]]
 	Pt[i] <- FWnext[[5]]
-	
-	# Update indicators
-	# Xvec <- Ft[(i-winlen):i]
-	# SDt[i] <- sd(Xvec)
-	# ARt[i] <- ACtime(Xvec) # lag 1 autocorr time
-	#ARt[i] = AClag1(Xvec) # lag 1 autocorr
-	
-	# Update SR statistic and alarm
-	
-	# Compute current lamda
-	# f.L <- dnorm(SDt[i], mean=0.5, sd=0.5, log=TRUE)
-# 	g.L <- f.L#dnorm(SDt[i],mean=2,sd=2,log=TRUE)
-# 	logLam <- (g.L-f.L)#/1.e+5 # rescale if it blows up
-# 	LAM <- exp(logLam)
-	
-	# update R
-	# LAMvec[i] <- LAM
-	# Rtest <- (1+Rvec[i-1])*LAM
-	# # Check for alarm
-	# Alarmvec[i] <- ifelse(Rtest>A.adj,1,Alarmvec[i-1])
-	# Rvec[i] <- ifelse(Rtest>A.adj,1,Rtest)
+
 } # END of decision-making loop
+
 
 # ===========
 # = Figures =
@@ -224,25 +166,8 @@ plot(tstep,Ht,type='l',lwd=2,col='blue',xlab='',ylab='Herbivores')
 plot(tstep,Pt,type='l',lwd=2,col='green',xlab='time step',ylab='Phytoplankton')
 
 # Set indices to zoom in on the "decision" period
-# decide0 <- nburn+1
-# decide1 <- nstep
-# dev.new()
-# par(mfrow=c(2,1),cex.lab=1.6,cex.axis=1.6)
-# plot(tstep[decide0:decide1],SDt[decide0:decide1],type='l',
-#      lwd=2,col='red',xlab='time step',ylab='Rolling SD')
-# grid()
-# plot(tstep[decide0:decide1],ARt[decide0:decide1],type='l',
-#      lwd=2,col='blue',xlab='time step',ylab='Rolling AC time')
-# grid()
-
-# dev.new()
-# par(mfrow=c(3,1),cex.lab=1.6,cex.axis=1.6)
-# plot(tstep[decide0:decide1],LAMvec[decide0:decide1],type='l',
-#      lwd=2,col='magenta',xlab='time step',ylab='Lamda')
-# plot(tstep[decide0:decide1],Rvec[decide0:decide1],type='l',
-#      lwd=2,col='purple',xlab='time step',ylab='S-R statistic')
-# plot(tstep[decide0:decide1],Alarmvec[decide0:decide1],
-#      type='l',lwd=2,col='red',xlab='time step',ylab='Alarm Flag')
+decide0 <- nburn+1
+decide1 <- nstep
 
 dev.new()
 par(mfrow=c(1,1),cex.lab=1.6,cex.axis=1.6,oma=c(2,2.2,2,4))
@@ -251,11 +176,3 @@ plot(tstep[decide0:decide1],10*At[decide0:decide1],type='l',lwd=2,col='magenta',
 points(tstep[decide0:decide1],Ft[decide0:decide1],type='l',lwd=2,col='blue')
 legend(x=1050,y=150,legend=c('Piscivore','Forage Fish'),col=c('magenta','blue'),lwd=c(2,2,2),bty='n',
        cex=1.4,text.font=1)
-# par(new=TRUE,mfg=c(1,1)) # add the new axis
-# plot(tstep[decide0:decide1],SDt[decide0:decide1],type='l',
-#      lwd=2,col='darkred',yaxt='n',xaxt='n',xlab=' ',ylab=' ')
-# axis(4,pretty(range(SDt[decide0:decide1],na.rm=TRUE),5),col='darkred',col.axis='darkred')
-# mtext('SD of Forage Fish',side=4,line=3,font=1,cex=1.6,col='darkred')
-
-# Save data for key graphic
-# save(tstep,At,Ft,SDt,file='Fish_TreatHalt_NoSqueal.Rdata')
