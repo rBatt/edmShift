@@ -33,8 +33,9 @@ FWsim.step <- function(qE,A0,F0,J0,H0,P0,dt,dtZ,nvec) { # Start simulation funct
 	P1 <- P0 + (Prate*dt) + (sigma*NoiseP*dtZ)
 	P1 <- max(P1,0.1)  # Force P greater than 0.1
 
-	# Construct list for output
-	SimList <- list(A1,F1,J1,H1,P1)
-	return(SimList)
+	# Construct output vector
+	simOut <- c("At"=A1, "Ft"=F1, "Jt"=J1, "Ht"=H1, "Pt"=P1)
+	# SimList <- list(A1,F1,J1,H1,P1)
+	return(simOut)
 
 }  # End simulation function  ************************************
