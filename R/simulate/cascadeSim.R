@@ -60,8 +60,8 @@ cPH <- 0.25  # Consumption rate of phytoplankton by zooplankton
 # ===================
 # = Fish Parameters =
 # ===================
-qELO <- 1  # First Catchability x Effort
-qEHI <- 4  # Second Catchability x Effort
+qELO <- 0.001 #1  # First Catchability x Effort
+qEHI <- 0.05 #4  # Second Catchability x Effort
 fA <- 2  # Fecundity of adult piscivore (2 in OLD)
 cJA <- 0.1  # Density dependent mortality rate of juveniles
 cJF <- 0.5  # Consumption of juveniles by planktivores
@@ -96,7 +96,7 @@ nburn <- 1000
 nstep <- nburn + 1000  # total time steps
 tstep <- 1:nstep
 
-qEvec <- c(rep(0.001,nburn),seq(0.001, 0.05, length.out=(nstep-nburn)))
+qEvec <- c(rep(qELO,nburn),seq(qELO, qEHI, length.out=(nstep-nburn)))
 
 noise.vec <- rnorm(3*nstep)
 noise.mat <- matrix(noise.vec, nrow=nstep, ncol=3)
