@@ -14,6 +14,7 @@ FWsim.step <- function(qE,A0,F0,J0,H0,P0,dt,dtZ,nvec) { # Start simulation funct
 	#Jrate <- (fA/nint)*A0 + Jpredloss - (surv/nint)*J0 
 	Jrate <- (fA)*A0 + Jpredloss - (surv)*J0
 	A1 <- A0 + (Arate*dt)   # Update A numerically
+	# if(qE<0 & A1<1){A1 <- max(A1,7)} # RDB
 	F1 <- F0 + (Frate*dt) + (sigma*NoiseF*dtZ)
 	J1 <- J0 + (Jrate*dt)
 	A1 <- max(A1,0.1)  # Force A1 greater than 0.1
