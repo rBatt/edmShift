@@ -76,13 +76,45 @@ A2biom <- 0.2  # Convert A to kg / ha
 J2biom <- 0.05  # Convert J to kg / ha
 F2biom <- 1  # Convert F to kg / ha
 
+
+# ==========================
+# = Ecology Letters Params =
+# ==========================
+qELO <- 1 #0.001 #1  # First Catchability x Effort
+qEHI <- 1.7169 #0.05 #4  # Second Catchability x Effort
+
+Ho <- 1 #4    # Refuge biomass
+DH <- 0.5  # Diffusion parameter
+cHF <- 0.1  # Consumption rate by planktivore
+alf <- 0.3  # Conversion efficiency of consumed phytoplankton to zooplankton
+cPH <- 0.25  # Consumption rate of phytoplankton by zooplankton
+
+
+fA <- 2  # Fecundity of adult piscivore (2 in OLD)
+cJA <- 1E-3 #0.1  # Density dependent mortality rate of juveniles
+cJF <- 0.5  # Consumption of juveniles by planktivores
+cFA <- 0.3  # Consumption of planktivores by adult piscivores
+vuln <- 1 #80  # Vulnerability coefficient (this is "v" in eco lett table/ equations)
+hide <- 8 #80  # Hiding coefficient (this is "h" in eco lett table/ equations)
+surv <- 0.5 #0.6  # Overwinter survivorship of adults
+Fo <- 100  # Refuge density of planktivores  # 100 in OLD
+DF <- 0.1 #0.09  # Diffusion parameter for planktivores
+sigma <- 0.05  # SD of additive noise for planktivores (0.1 in May 07)
+A2biom <- 0.2  # Convert A to kg / ha
+J2biom <- 0.05  # Convert J to kg / ha
+F2biom <- 1  # Convert F to kg / ha
+
+
+
+
 # ======================
 # = Initial Conditions =
 # ======================
-Ainit <- 20  # Critical A is about 106 based on Fish_Thresh2.R, 11 Jun 07
+Ainit <- 300  # Critical A is about 106 based on Fish_Thresh2.R, 11 Jun 07
 Finit <- 1
 Hinit <- 5
 Pinit <- 3
+foodWeb.init <- c("At"=Ainit, "Ft"=Finit, "Jt"=Ainit*fA, "Ht"=Hinit, "Pt"=Pinit)
 
 
 # ==================
@@ -93,10 +125,20 @@ dt <- 1/nint
 dtZ <- sqrt(dt)
 
 nburn <- 1000
-nstep <- nburn + 1000  # total time steps
+nstep <- nburn + 500  # total time steps
 tstep <- 1:nstep
 
-qEvec <- c(rep(qELO,nburn),seq(qELO, qEHI, length.out=(nstep-nburn)))
+# qEvec <- c(rep(qELO, nburn), seq(qELO, qEHI, length.out=(nstep-nburn)))
+# qEvec0 <- arima.sim(list(0.99,0,0), n=nstep-nburn, innov=rnorm(n=nstep-nburn, mean=0, sd=0.005))
+qEvec0 <- c(
+	seq(qELO,qEHI, length.out=(nstep-nburn)/3-1),
+	seq(qEHI, qELO, length.out=(nstep-nburn)/3),
+	seq(qELO, qEHI, length.out=(nstep-nburn)/3)
+)
+
+# qEvec0 <- seq(0,0, length.out=(nstep-nburn))
+qEvec <- c(rep(qELO,nburn), qEvec0)
+
 
 noise.vec <- rnorm(3*nstep)
 noise.mat <- matrix(noise.vec, nrow=nstep, ncol=3)
@@ -104,70 +146,71 @@ noise.mat <- matrix(noise.vec, nrow=nstep, ncol=3)
 # Set up vectors to hold simulation results
 
 # Food web:
-At <- rep(0,nstep)
-Ft <- At
-Jt <- At
-Ht <- At
-Pt <- At
-At[1] <- Ainit
-Ft[1] <- Finit
-Jt[1] <- fA*Ainit
-Ht[1] <- Hinit
-Pt[1] <- Pinit
+fWeb <- matrix(NA, nrow=nstep, ncol=5, dimnames=list(NULL, c("At", "Ft", "Jt", "Ht", "Pt")))
+fWeb[1,] <- foodWeb.init
 
 
-# ===============
-# = Run Burn-in =
-# ===============
-for(i in 2:nburn)  {
-  qE <- qEvec[i]
-  FWnext <- FWsim.step(qE,At[i-1],Ft[i-1],Jt[i-1],Ht[i-1],Pt[i-1],dt,dtZ,noise.mat[i,])
-  At[i] <- FWnext[[1]]
-  Ft[i] <- FWnext[[2]]
-  Jt[i] <- FWnext[[3]]
-  Ht[i] <- FWnext[[4]]
-  Pt[i] <- FWnext[[5]]
+# ========================
+# = Simulate Time Series =
+# ========================
+for(i in 2:nstep){	
+	FWnext <- FWsim.step(
+		qEvec[i], 
+		fWeb[i-1, "At"],
+		fWeb[i-1, "Ft"],
+		fWeb[i-1, "Jt"],
+		fWeb[i-1, "Ht"],
+		fWeb[i-1, "Pt"],
+		dt,
+		dtZ,
+		noise.mat[i,]
+	)
+
+	fWeb[i,] <- FWnext
 }
 
-
-# ========================
-# = Simulate time series =
-# ========================
-# Gather true qE values
-qEtrue <- qEvec
-for(i in (nburn+1):(nstep) ) {
-	
-	# Update food web
-	qE <- qEvec[i] #ifelse(Alarmvec[i-1]<0.5,qEvec[i],0.001)
-	qEtrue[i] <- qE
-	FWnext <- FWsim.step(qE,At[i-1],Ft[i-1],Jt[i-1],Ht[i-1],Pt[i-1],dt,dtZ,noise.mat[i,])
-	At[i] <- FWnext[[1]]
-	Ft[i] <- FWnext[[2]]
-	Jt[i] <- FWnext[[3]]
-	Ht[i] <- FWnext[[4]]
-	Pt[i] <- FWnext[[5]]
-
-} # END of decision-making loop
 
 
 # ===========
 # = Figures =
 # ===========
-dev.new(width=3, height=6)
-par(mfrow=c(3,1), mar=c(2,2,0.25, 0.25), mgp=c(1.15, 0.25, 0), tcl=-0.15, ps=10, cex=1)
-plot(tstep,qEvec,type='l',lwd=2,col='brown',xlab='',ylab='qE')
-plot(tstep,At,type='l',lwd=2,col='darkgreen',xlab='',ylab='Adults')
-plot(tstep,Jt,type='l',lwd=2,col='cyan',xlab='time step',ylab='Juveniles')
-
-dev.new(width=3, height=6)
-par(mfrow=c(3,1), mar=c(2,2,0.25, 0.25), mgp=c(1.15, 0.25, 0), tcl=-0.15, ps=10, cex=1)
-plot(tstep,Ft,type='l',lwd=2,col='red',xlab='',ylab='Planktivores')
-plot(tstep,Ht,type='l',lwd=2,col='blue',xlab='',ylab='Herbivores')
-plot(tstep,Pt,type='l',lwd=2,col='green',xlab='time step',ylab='Phytoplankton')
-
 # Set indices to zoom in on the "decision" period
 decide0 <- nburn+1
 decide1 <- nstep
+
+# dev.new()
+HPccf <- ccf(fWeb[,"Ht"], fWeb[,"Pt"], plot=FALSE)
+HPccf$lag[which.max(HPccf$acf)]
+
+myCol <- function(n){
+	colorRampPalette(c("#000099", "#00FEFF", "#45FE4F", "#FCFF00", "#FF9400", "#FF3100"))(n)
+}
+dev.new()
+plot(as.data.frame(cbind(qEvec,fWeb))[decide0:decide1,], col=myCol(nstep-nburn), cex=0.75, pch=20)
+
+
+
+dev.new(width=3, height=6)
+par(mfrow=c(3,1), mar=c(2,2,0.25, 0.25), mgp=c(1.15, 0.25, 0), tcl=-0.15, ps=10, cex=1)
+plot(tstep[decide0:decide1],qEvec[decide0:decide1],type='l',lwd=2,col='brown',xlab='',ylab='qE')
+plot(tstep[decide0:decide1],fWeb[decide0:decide1,"At"],type='l',lwd=2,col='darkgreen',xlab='',ylab='Adults')
+plot(tstep[decide0:decide1],fWeb[decide0:decide1,"Jt"],type='l',lwd=2,col='cyan',xlab='time step',ylab='Juveniles')
+
+
+dev.new(width=3, height=6)
+par(mfrow=c(3,1), mar=c(2,2,0.25, 0.25), mgp=c(1.15, 0.25, 0), tcl=-0.15, ps=10, cex=1)
+plot(tstep[1:decide0],qEvec[1:decide0],type='l',lwd=2,col='brown',xlab='',ylab='qE')
+plot(tstep[1:decide0],fWeb[1:decide0,"At"],type='l',lwd=2,col='darkgreen',xlab='',ylab='Adults')
+plot(tstep[1:decide0],fWeb[1:decide0,"Jt"],type='l',lwd=2,col='cyan',xlab='time step',ylab='Juveniles')
+
+
+dev.new(width=3, height=6)
+par(mfrow=c(3,1), mar=c(2,2,0.25, 0.25), mgp=c(1.15, 0.25, 0), tcl=-0.15, ps=10, cex=1)
+plot(tstep[decide0:decide1],fWeb[decide0:decide1,"Ft"],type='l',lwd=2,col='red',xlab='',ylab='Planktivores')
+plot(tstep[decide0:decide1],fWeb[decide0:decide1,"Ht"],type='l',lwd=2,col='blue',xlab='',ylab='Herbivores')
+plot(tstep[decide0:decide1],fWeb[decide0:decide1,"Pt"],type='l',lwd=2,col='green',xlab='time step',ylab='Phytoplankton')
+
+
 
 dev.new()
 par(mfrow=c(1,1),cex.lab=1.6,cex.axis=1.6,oma=c(2,2.2,2,4))
