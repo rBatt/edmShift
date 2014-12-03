@@ -125,15 +125,22 @@ dt <- 1/nint
 dtZ <- sqrt(dt)
 
 nburn <- 1000
-nstep <- nburn + 500  # total time steps
+nstep <- nburn + 1000  # total time steps
 tstep <- 1:nstep
 
 # qEvec <- c(rep(qELO, nburn), seq(qELO, qEHI, length.out=(nstep-nburn)))
 # qEvec0 <- arima.sim(list(0.99,0,0), n=nstep-nburn, innov=rnorm(n=nstep-nburn, mean=0, sd=0.005))
+# qEvec0 <- c(
+# 	seq(qELO,qEHI, length.out=(nstep-nburn)/3-1),
+# 	seq(qEHI, qELO, length.out=(nstep-nburn)/3),
+# 	seq(qELO, qEHI, length.out=(nstep-nburn)/3)
+# )
+
 qEvec0 <- c(
-	seq(qELO,qEHI, length.out=(nstep-nburn)/3-1),
-	seq(qEHI, qELO, length.out=(nstep-nburn)/3),
-	seq(qELO, qEHI, length.out=(nstep-nburn)/3)
+	seq(qELO,(qELO+qEHI)/2, length.out=(nstep-nburn)/4),
+	seq((qELO+qEHI)/2, qELO, length.out=(nstep-nburn)/4),
+	seq(qELO, qEHI, length.out=(nstep-nburn)/4),
+	seq(qEHI, (qELO+qEHI)/2, length.out=(nstep-nburn)/4)
 )
 
 # qEvec0 <- seq(0,0, length.out=(nstep-nburn))
@@ -210,6 +217,11 @@ plot(tstep[decide0:decide1],fWeb[decide0:decide1,"Ft"],type='l',lwd=2,col='red',
 plot(tstep[decide0:decide1],fWeb[decide0:decide1,"Ht"],type='l',lwd=2,col='blue',xlab='',ylab='Herbivores')
 plot(tstep[decide0:decide1],fWeb[decide0:decide1,"Pt"],type='l',lwd=2,col='green',xlab='time step',ylab='Phytoplankton')
 
+dev.new(width=3, height=6)
+par(mfrow=c(3,1), mar=c(2,2,0.25, 0.25), mgp=c(1.15, 0.25, 0), tcl=-0.15, ps=10, cex=1)
+plot(tstep[decide0:decide1],fWeb[decide0:decide1,"Ft"],type='l',lwd=2,col='red',xlab='',ylab='Planktivores', ylim=c(0,10))
+plot(tstep[decide0:decide1],fWeb[decide0:decide1,"Ht"],type='l',lwd=2,col='blue',xlab='',ylab='Herbivores')
+plot(tstep[decide0:decide1],fWeb[decide0:decide1,"Pt"],type='l',lwd=2,col='green',xlab='time step',ylab='Phytoplankton')
 
 
 dev.new()
