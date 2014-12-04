@@ -70,7 +70,7 @@ if(fw.choice=="EcoLett"){
 	# ==========================
 
 	Ho <- 1 #4    # Refuge biomass
-	DH <- 0.5  # Diffusion parameter
+	DH <- 0.5  # Diffusion parameter for herbivore (zooplankton)
 	cHF <- 0.1  # Consumption rate by planktivore
 	alf <- 0.3  # Conversion efficiency of consumed phytoplankton to zooplankton
 	cPH <- 0.25  # Consumption rate of phytoplankton by zooplankton
@@ -85,7 +85,7 @@ if(fw.choice=="EcoLett"){
 	surv <- 0.5 #0.6  # Overwinter survivorship of adults
 	Fo <- 100  # Refuge density of planktivores  # 100 in OLD
 	DF <- 0.1 #0.09  # Diffusion parameter for planktivores
-	sigma <- 0.05  # SD of additive noise for planktivores (0.1 in May 07)
+	sigma <- 0.1 #0.05  # SD of additive noise for planktivores (0.1 in May 07)
 	A2biom <- 0.2  # Convert A to kg / ha
 	J2biom <- 0.05  # Convert J to kg / ha
 	F2biom <- 1  # Convert F to kg / ha
@@ -99,13 +99,5 @@ if(fw.choice=="EcoLett"){
 nint <- 10  # Time steps per 'year' 
 dt <- 1/nint
 dtZ <- sqrt(dt)
-nburn <- 1000
+nburn <- 1000 # with the use of FW.find.init(), don't need much burn in, but still appears necessary both as check and b/c stochasticity changes things (?)
 
-
-Ainit <- 300  # Critical A is about 106 based on Fish_Thresh2.R, 11 Jun 07
-Finit <- 1
-Hinit <- 5
-Pinit <- 3
-
-
-foodWeb.init <- c("At"=Ainit, "Ft"=Finit, "Jt"=Ainit*fA, "Ht"=Hinit, "Pt"=Pinit)
