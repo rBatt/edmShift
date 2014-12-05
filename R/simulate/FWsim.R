@@ -15,9 +15,7 @@ set.seed(2)
 # Noise is added to F, H and P
 # SRC 12 Nov 2012
 
-# ===================
-# = Load Parameters =
-# ===================
+
 # =================================
 # = Load Parameters and Functions =
 # =================================
@@ -38,15 +36,13 @@ invisible(sapply(paste(figFuns.location, list.files(figFuns.location), sep="/"),
 # Set up options and result array
 exp1.steps <- 200 # number of steps for each qE in experiment 1
 # exp1.qE <- c(1, 1.2, 1.4, 1.6, 1.7, 1.8, 1.9) # qE values for Exp #1; from Fig S2.1 Carpenter et al. 2008 Eco Lett
-exp1.qE <- c(0, 0.7, 1.19, 1.3, 1.5, 1.7, 2.0) # qE values for Exp #1; from Fig S2.1 Carpenter et al. 2008 Eco Lett
+exp1.qE <- c(0, 0.7, 1.19, 1.3, 1.5, 1.7, 2.0) # qE values for Exp #1
 fw.exp1 <- array(data=NA, dim=c(exp1.steps, 6, length(exp1.qE)), dimnames=list(NULL, c("qE","At","Ft","Jt","Ht","Pt"),NULL))
 
 # Run Experiment 1
 for(i in 1:length(exp1.qE)){
 	fw.exp1[,,i] <- FWsim.wrap(qE=exp1.qE[i], step=exp1.steps, mthd="constant")
 }
-
-
 
 
 # ===============================================
@@ -62,9 +58,6 @@ fw.exp2 <- array(data=NA, dim=c(exp2.steps, 6, length(exp2.qE)), dimnames=list(N
 fw.exp2 <- FWsim.wrap(qE=exp2.qE, step=exp2.steps, mthd="linear")
 
 
-
-
-
 # ===================================
 # = Experiment #3: Gradual Increase =
 # ===================================
@@ -73,11 +66,8 @@ exp3.steps <- 300 # number of steps for each qE
 exp3.qE <- c(1.18, 1.72)
 fw.exp3 <- array(data=NA, dim=c(exp3.steps, 6, 1), dimnames=list(NULL, c("qE","At","Ft","Jt","Ht","Pt"),NULL))
 
-
 # Run Experiment 3
 fw.exp3 <- FWsim.wrap(qE=exp3.qE, step=exp3.steps, mthd="linear")
-
-
 
 
 # ===================================
@@ -85,10 +75,16 @@ fw.exp3 <- FWsim.wrap(qE=exp3.qE, step=exp3.steps, mthd="linear")
 # ===================================
 # Set up Exp 4
 exp4.steps <- 400
-# exp4.qE <- c(0.25, 0.35, 0.3, 0.5, 0.4, 0.7, 0.55, 0.95, 0.75, 1.25, 1, 1.6, 1.3)
 exp4.qE <- c(rep(c(0.9, 1.2, 1.5, 1.8), each=2)+rep(c(0.1, -0.1),4))
 fw.exp4 <- array(data=NA, dim=c(exp4.steps, 6, 1), dimnames=list(NULL, c("qE","At","Ft","Jt","Ht","Pt"),NULL))
 
 # Run Experiment 4
 fw.exp4 <- FWsim.wrap(qE=exp4.qE, step=exp4.steps, mthd="linear")
 
+save(
+	exp1.steps, exp1.qE, fw.exp1,
+	exp2.steps, exp2.qE, fw.exp2,
+	exp3.steps, exp3.qE, fw.exp3,
+	exp4.steps, exp4.qE, fw.exp4,
+	file="/Users/Battrd/Documents/School&Work/pinskyPost/edmShift/results/FWsim/FWsim.RData"
+	)
