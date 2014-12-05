@@ -1,0 +1,5 @@
+# simulate
+__R scripts for simulating time series__
+
+These should be top level simulation scripts; when finalized, they should not: include functions, generate figures, conduct statistical analyses.
+
