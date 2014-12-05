@@ -1,8 +1,12 @@
 
-ccm <- function(data, var1N, var2N, pred, E=3, nStart=20, libSize=NULL){
+ccm <- function(data, var1N, var2N, pred=NULL, E=3, nStart=20, nLS=NULL, libSize=NULL){
 	
 	var1 <- data[,var1N]
 	var2 <- data[,var2N]
+	
+	if(is.null(pred)){
+		pred <- c(1,(nrow(data)-nStart))
+	}
 
 
 	ed <- (E*2)+1
@@ -11,13 +15,17 @@ ccm <- function(data, var1N, var2N, pred, E=3, nStart=20, libSize=NULL){
 	}else{
 		pickL <- libSize
 	}
-
-	Ls <- pickL[1]:pickL[2]
+	
+	if(is.null(nLS)){
+		Ls <- pickL[1]:pickL[2]
+	}else{
+		Ls <- unique(as.integer(seq(pickL[1], pickL[2], length.out=nLS)))
+	}
 	var1_xmap_var2 <- data.frame()
 	var2_xmap_var1 <- data.frame()
 
 
-	for(lib_size in pickL[1]:pickL[2])
+	for(lib_size in Ls)
 	{
 		pO <- pred[1]:(pred[2]-lib_size)
 		if(length(pO)>1){
@@ -91,5 +99,9 @@ ccm <- function(data, var1N, var2N, pred, E=3, nStart=20, libSize=NULL){
 	attr(outMat, "var2N") <- var2N
 	attr(outMat, "slope_2x1") <- slope_2x1
 	attr(outMat, "slope_1x2") <- slope_1x2
+	attr(outMat, "slope_2x1_se") <- slope_2x1_se
+	attr(outMat, "slope_1x2_se") <- slope_1x2_se
+	
+	return(outMat)
 	
 }
